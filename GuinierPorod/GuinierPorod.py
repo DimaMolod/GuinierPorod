@@ -53,16 +53,15 @@ def SAXSplot(s, I, Err):
     #plt.errorbar(s, I, yerr = Err, fmt=".-", color = 'blue')
     plt.scatter(s,I,s=80, facecolors='none', edgecolors='b')
     plt.yscale("log")
-    plt.title("Generalized Guinier-Porod fit")
-    plt.xlabel("s, inv. nm")
+    plt.xlabel("s, $\mathregular{nm^{-1}}$")
     plt.ylabel("Intensity, a.u.")
 
-def SAXSplotfit(s, I, Q1):
+def SAXSplotfit(q, I, Q1):
     plt.subplot()
     Err1,Err2 = [], []
     s1,s2 = [], []
     i1,i2 = [], []
-    for sca,inten in zip(s,I):
+    for sca,inten in zip(q,I):
         if sca <= Q1:
             s1.append(sca)
             i1.append(inten)
@@ -72,7 +71,6 @@ def SAXSplotfit(s, I, Q1):
             s2.append(sca)
             i2.append(inten)
             Err2.append(math.sqrt(math.fabs(inten)))
-
     plt.plot(s1, i1, linewidth = 2, color = 'yellow')
     plt.plot(s2, i2, linewidth = 2, color = 'red')
 
@@ -113,15 +111,18 @@ q, I, Err = file_load()
 # Create x for fit
 trialQ = np.linspace(q[0], q[-1], 1000)
 # Fit
-popt, pcov = optimize.curve_fit(Guinier_Porod5param, q, I, bounds = ([100,0,1,2.7,0], [600,3,4,3.5,1]),maxfev=100000)
+popt, pcov = optimize.curve_fit(Guinier_Porod5param, q, I, bounds = ([1,0,1,0.4,0], [600,3,4,10.0,1]),maxfev=100000)
 G,s,d,Rg,background = popt
 Q1 = (1 / Rg) * math.pow((0.5 * (d - s) * (3 - s)), 0.5)
-print("G = " + str(G*1000) + " s = " + str(s) + " d = " + str(d) + " Rg = " + str(Rg) +" background = " +str(background*1000))
-print("Q1 = " + str(Q1))
+str = "G = " + str(G*1000) + " s = " + str(s) + " d = " + str(d) + " Rg = " + str(Rg) +" background = " +str(background*1000) +\
+      "Q1 = " + str(Q1)
+print(str)
 yEXP = Guinier_Porod5param(trialQ, *popt)
 SAXSplot(q,I,Err)
 SAXSplotfit(trialQ, yEXP, Q1)
+plt.title("Generalized Guinier-Porod fit \n" + str )
 plt.grid()
+plt.grid(b=True, which='minor', color='black', linestyle='--')
 plt.show()
 end = time.time()
 print (" Time consumed : " + str (end - start) + " sec")
